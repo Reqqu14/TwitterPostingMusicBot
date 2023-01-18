@@ -4,5 +4,5 @@ namespace TwitterPostingMusicBot.Interfaces;
 
 public interface ITwitterService
 {
-    Task UploadNewPostAsync(TwitterPost post);
+    Task UploadNewPostAsync(List<TwitterPost> posts);
 }

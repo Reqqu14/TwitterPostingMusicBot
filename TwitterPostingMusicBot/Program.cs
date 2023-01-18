@@ -1,11 +1,14 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TwitterPostingMusicBot.Infrastructure;
 using TwitterPostingMusicBot.Interfaces;
 using TwitterPostingMusicBot.Models.Spotify;
 using TwitterPostingMusicBot.Models.Twitter;
 using TwitterPostingMusicBot.Services;
+
 
 var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
@@ -25,7 +28,25 @@ static void ConfigureServices(IConfiguration configuration,
 {
     services.AddTransient<ITwitterService, TwitterService>();
     services.AddTransient<ISpotifyService, SpotifyService>();
+    services.AddTransient<IArtistService, ArtistService>();
+    services.AddDbContext<TwitterPostingMusicDbContext>(x =>
+        x.UseSqlServer(configuration["DatabaseCS"]));
 
+    var twitterConfig = PrepareTwitterConfig(configuration);
+
+    services.AddSingleton(twitterConfig);
+
+    var spotifyConfig = PrepareSporifyConfig(configuration);
+
+    services.AddSingleton(spotifyConfig);
+}
+
+
+host.Run();
+
+
+static TwitterConfig PrepareTwitterConfig(IConfiguration configuration)
+{
     var twitterConfig = new TwitterConfig();
 
     twitterConfig.TwitterToken = configuration["TwitterToken"];
@@ -35,15 +56,15 @@ static void ConfigureServices(IConfiguration configuration,
     twitterConfig.TwitterOauthTokenSecret = configuration["TwitterOauthTokenSecret"];
     twitterConfig.TwitterBaseUrl = configuration["TwitterBaseUrl"];
 
-    services.AddSingleton(twitterConfig);
+    return twitterConfig;
+}
 
+static SpotifyConfig PrepareSporifyConfig(IConfiguration configuration)
+{
     var spotifyConfig = new SpotifyConfig();
 
     spotifyConfig.SpotifyClientId = configuration["SpotifyClientId"];
     spotifyConfig.SpotifyClientSecret = configuration["SpotifyClientSecret"];
 
-    services.AddSingleton(spotifyConfig);
+    return spotifyConfig;
 }
-
-
-host.Run();

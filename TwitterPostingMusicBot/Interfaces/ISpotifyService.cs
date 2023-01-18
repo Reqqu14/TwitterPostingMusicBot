@@ -1,6 +1,9 @@
-﻿namespace TwitterPostingMusicBot.Interfaces;
+﻿using SpotifyAPI.Web;
+using TwitterPostingMusicBot.Models.Domain;
+
+namespace TwitterPostingMusicBot.Interfaces;
 
 public interface ISpotifyService
 {
-    Task GetNewSongsAsync();
+    Task<List<SimpleAlbum>> GetNewSongsAsync(List<Artist> artists);
 }

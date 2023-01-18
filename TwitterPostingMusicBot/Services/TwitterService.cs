@@ -19,7 +19,7 @@ namespace TwitterPostingMusicBot.Services
             _logger = loggerFactory.CreateLogger<TwitterService>();
         }
 
-        public async Task UploadNewPostAsync(TwitterPost post)
+        public async Task UploadNewPostAsync(List<TwitterPost> posts)
         {
             RestClient client = new RestClient();
 
@@ -27,19 +27,22 @@ namespace TwitterPostingMusicBot.Services
                 OAuth1Authenticator.ForProtectedResource(_twitterConfig.TwitterAppKey, _twitterConfig.TwitterAppSecret,
                     _twitterConfig.TwitterOauthToken, _twitterConfig.TwitterOauthTokenSecret);
 
-            RestRequest postRequest = new RestRequest($"{_twitterConfig.TwitterBaseUrl}/tweets");
-
-            postRequest.AddHeader("Authorization", $"Bearer {_twitterConfig.TwitterToken}");
-
-            postRequest.AddBody(post);
-
-            try
+            foreach (var post in posts)
             {
-                var postResponse = await client.ExecutePostAsync(postRequest);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Error occured during post publishing, message: '{e.Message}', post: '{post}'");
+                RestRequest postRequest = new RestRequest($"{_twitterConfig.TwitterBaseUrl}/tweets");
+
+                postRequest.AddHeader("Authorization", $"Bearer {_twitterConfig.TwitterToken}");
+
+                postRequest.AddBody(post);
+
+                try
+                {
+                    var postResponse = await client.ExecutePostAsync(postRequest);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"Error occured during post publishing, message: '{e.Message}', post: '{post}'");
+                }
             }
         }
     }

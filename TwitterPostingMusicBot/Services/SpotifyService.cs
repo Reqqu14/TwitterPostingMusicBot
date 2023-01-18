@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using TwitterPostingMusicBot.Interfaces;
+using TwitterPostingMusicBot.Models.Domain;
 using TwitterPostingMusicBot.Models.Spotify;
 
 namespace TwitterPostingMusicBot.Services;
@@ -18,7 +20,7 @@ public class SpotifyService : ISpotifyService
         _logger = loggerFactory.CreateLogger<SpotifyService>();
     }
 
-    public async Task GetNewSongsAsync()
+    public async Task<List<SimpleAlbum>> GetNewSongsAsync(List<Artist> artists)
     {
         var newSongs = new List<SimpleAlbum>();
 
@@ -31,13 +33,29 @@ public class SpotifyService : ISpotifyService
 
         var spotifyClient = new SpotifyClient(config.WithToken(response.AccessToken));
 
-        var artist = await spotifyClient.Artists.GetAlbums("4Q3xLVaD2uBZGVxmCYuSkt");
-
-        if (artist.Items != null)
+        foreach (var artist in artists)
         {
-            var newRelease = artist.Items.MaxBy(x => x.ReleaseDate);
+            try
+            {
+                var albums = await spotifyClient.Artists.GetAlbums(artist.ArtistId);
+
+                if (albums.Items != null)
+                {
+                    var newRelease = albums.Items.MaxBy(x => x.ReleaseDate);
+
+                    if (DateTimeOffset.Parse(newRelease.ReleaseDate) > artist.LastReleasedSongDate)
+                    {
+                        newSongs.Add(newRelease);
+                        artist.ToUpdate = true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error occured while getting artist, message: '{e.Message}', artist: '{artists}'");
+            }
         }
 
-        var zm = 1;
+        return newSongs;
     }
 }

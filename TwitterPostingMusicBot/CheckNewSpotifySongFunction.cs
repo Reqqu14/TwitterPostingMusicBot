@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using TwitterPostingMusicBot.Interfaces;
 using TwitterPostingMusicBot.Models.Twitter;
-using TimerInfo = Microsoft.Azure.Functions.Worker.TimerInfo;
 
 namespace TwitterPostingMusicBot
 {
@@ -28,8 +27,8 @@ namespace TwitterPostingMusicBot
 
         [Function("CheckNewSpotifySongFunction")]
         public async Task Run(
-            [Microsoft.Azure.Functions.Worker.TimerTrigger("*/3 * * * *")]
-            TimerInfo myTimer)
+            [TimerTrigger("0 */30 * * * *", RunOnStartup = true)]
+            MyInfo myTimer)
         {
             _logger.LogInformation(
                 $"C# Timer trigger function 'CheckNewSpotifySongFunction' executed at: {DateTime.Now}");
@@ -68,5 +67,25 @@ namespace TwitterPostingMusicBot
 
             return posts;
         }
+
+        #region timeModel
+
+        public class MyInfo
+        {
+            public MyScheduleStatus ScheduleStatus { get; set; }
+
+            public bool IsPastDue { get; set; }
+        }
+
+        public class MyScheduleStatus
+        {
+            public DateTime Last { get; set; }
+
+            public DateTime Next { get; set; }
+
+            public DateTime LastUpdated { get; set; }
+        }
+
+        #endregion
     }
 }

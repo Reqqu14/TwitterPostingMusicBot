@@ -8,6 +8,7 @@ public class Artist : AuditableEntity
     public string ArtistId { get; set; }
     public string ArtistName { get; set; }
     public string ArtistTwitterName { get; set; }
+    public string ArtistLanguage { get; set; }
     public DateTimeOffset? LastReleasedSongDate { get; set; }
     public bool ToUpdate { get; set; }
 }

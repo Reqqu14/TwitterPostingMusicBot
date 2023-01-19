@@ -4,6 +4,7 @@ using SpotifyAPI.Web;
 using TwitterPostingMusicBot.Interfaces;
 using TwitterPostingMusicBot.Models.Domain;
 using TwitterPostingMusicBot.Models.Spotify;
+using System.Linq;
 
 namespace TwitterPostingMusicBot.Services;
 
@@ -43,7 +44,10 @@ public class SpotifyService : ISpotifyService
                 {
                     var newRelease = albums.Items.MaxBy(x => x.ReleaseDate);
 
-                    if (DateTimeOffset.Parse(newRelease.ReleaseDate) > artist.LastReleasedSongDate)
+                    var releaseDate = DateTimeOffset.Parse(newRelease.ReleaseDate);
+
+                    if (releaseDate > artist.LastReleasedSongDate &&
+                        releaseDate.Day <= DateTimeOffset.Now.Day)
                     {
                         newSongs.Add(newRelease);
                         artist.ToUpdate = true;

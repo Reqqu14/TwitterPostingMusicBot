@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/TwitterPostingMusicBot/Properties/ServiceDependencies/CheckNewSpotifySongFunction - Zip Deploy/appInsights1.arm.json
+/TwitterPostingMusicBot/Properties/ServiceDependencies/CheckNewSpotifySongFunction - Zip Deploy/profile.arm.json
+/TwitterPostingMusicBot/Properties/ServiceDependencies/CheckNewSpotifySongFunction - Zip Deploy/storage1.arm.json
+/TwitterPostingMusicBot/Properties/serviceDependencies.CheckNewSpotifySongFunction - Zip Deploy.json

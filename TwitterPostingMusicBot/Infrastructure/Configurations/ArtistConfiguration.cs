@@ -14,6 +14,8 @@ public class ArtistConfiguration : IEntityTypeConfiguration<Artist>
 
         builder.Property(x => x.ArtistName).HasMaxLength(50);
 
+        builder.Property(x => x.ArtistTwitterName).HasMaxLength(50);
+
         builder.Property(x => x.LastReleasedSongDate).IsRequired(false);
     }
 }

@@ -29,6 +29,7 @@ static void ConfigureServices(IConfiguration configuration,
     services.AddTransient<ITwitterService, TwitterService>();
     services.AddTransient<ISpotifyService, SpotifyService>();
     services.AddTransient<IArtistService, ArtistService>();
+    services.AddTransient<IOpenAiService, OpenAiService>();
     services.AddDbContext<TwitterPostingMusicDbContext>(x =>
         x.UseSqlServer(configuration["DatabaseCS"]));
 

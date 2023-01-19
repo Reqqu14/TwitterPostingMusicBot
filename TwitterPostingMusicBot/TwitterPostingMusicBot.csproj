@@ -20,6 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="5.2.0" />
+    <PackageReference Include="OpenAI.Net" Version="1.0.4" />
     <PackageReference Include="RestSharp" Version="108.0.3" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.0.0" />
   </ItemGroup>
@@ -38,5 +39,6 @@
   <ItemGroup>
     <Folder Include="Infrastructure\Configurations\" />
     <Folder Include="Models\Domain\Abstract\" />
+    <Folder Include="Helpers\" />
   </ItemGroup>
 </Project>

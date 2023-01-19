@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using TwitterPostingMusicBot.Helpers;
 using TwitterPostingMusicBot.Interfaces;
 using TwitterPostingMusicBot.Models.Domain;
 using TwitterPostingMusicBot.Models.Twitter;
@@ -14,6 +15,7 @@ namespace TwitterPostingMusicBot
         private readonly ITwitterService _twitterService;
         private readonly ISpotifyService _spotifyService;
         private readonly IArtistService _artistService;
+        private readonly IOpenAiService _openAiService;
         private readonly ILogger _logger;
         private readonly string AlbumType = "single";
 
@@ -21,11 +23,13 @@ namespace TwitterPostingMusicBot
             ILoggerFactory loggerFactory,
             ITwitterService twitterService,
             ISpotifyService spotifyService,
-            IArtistService artistService)
+            IArtistService artistService,
+            IOpenAiService openAiService)
         {
             _twitterService = twitterService;
             _spotifyService = spotifyService;
             _artistService = artistService;
+            _openAiService = openAiService;
             _logger = loggerFactory.CreateLogger<CheckNewSpotifySongFunction>();
         }
 
@@ -41,7 +45,7 @@ namespace TwitterPostingMusicBot
 
             var newSongs = await _spotifyService.GetNewSongsAsync(artists);
 
-            var postsToPublicate = PreparePostsToPublicate(newSongs, artists);
+            var postsToPublicate = await PreparePostsToPublicateAsync(newSongs, artists);
 
             if (postsToPublicate.Any())
             {
@@ -53,7 +57,8 @@ namespace TwitterPostingMusicBot
                 $"C# Timer trigger function 'CheckNewSpotifySongFunction' finished at: {DateTime.Now}, new posts publicated = {postsToPublicate.Count}");
         }
 
-        private List<TwitterPost> PreparePostsToPublicate(List<SimpleAlbum> newSongs, List<Artist> artists)
+        private async Task<List<TwitterPost>> PreparePostsToPublicateAsync(List<SimpleAlbum> newSongs,
+            List<Artist> artists)
         {
             var posts = new List<TwitterPost>();
 
@@ -61,15 +66,29 @@ namespace TwitterPostingMusicBot
             {
                 var post = new TwitterPost();
 
-                var twitterArtistsAccounts = artists.Where(x =>
+                var artist = artists.Where(x =>
                         song.Artists.Select(y => y.Name).Contains(x.ArtistName) &&
                         !string.IsNullOrEmpty(x.ArtistTwitterName))
-                    .Select(x => x.ArtistTwitterName);
+                    .Select(x => x);
 
-                post.Text = (song.AlbumType == AlbumType ? "New song from " : "New album from ") +
-                            $" {string.Join(", ", song.Artists.Select(x => x.Name))}: " +
-                            $"{song.Name}" +
-                            $"{Environment.NewLine} {string.Join(", ", twitterArtistsAccounts)}" +
+                var language = artist.FirstOrDefault().ArtistLanguage == "PL"
+                    ? LanguageEnum.Polish
+                    : LanguageEnum.English;
+
+                var postText = song.AlbumType == AlbumType
+                    ? await _openAiService.GetMessage(
+                        true,
+                        language,
+                        string.Join(", ", song.Artists.Select(x => x.Name)),
+                        song.Name)
+                    : await _openAiService.GetMessage(
+                        false,
+                        language,
+                        string.Join(", ", song.Artists.Select(x => x.Name)),
+                        song.Name);
+
+                post.Text = postText +
+                            $"{Environment.NewLine} {string.Join(", ", artist.Select(x => x.ArtistTwitterName))}" +
                             $"{Environment.NewLine} {song.ExternalUrls.FirstOrDefault().Value}";
 
                 posts.Add(post);
